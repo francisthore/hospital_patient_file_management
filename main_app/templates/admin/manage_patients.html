@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block content %}
+{% if current_user.is_authenticated %}
+    <div class="container p-3 rounded-2 shadow d-flex flex-column justify-content-center align-items-center">
+        <form method="post" class="d-flex gap-2" action="{{ url_for('admin.manage_patients') }}">
+            {{ form.hidden_tag()}}
+            <div class="form-group d-flex align-items-center">
+                {{ form.id_number.label(class="fw-bold me-2") }} {{ form.id_number(class="form-control w-auto") }}
+                
+            </div>
+            {{ form.submit(class="btn btn-primary") }}
+        </form>
+        <div class="w-100">
+            {% if patient %}
+            <div class="table-responsive"></div>
+            <table class="table table-hover table-striped table-responsive">
+                <thead>
+                  <tr>
+                    <th scope="col">ID No</th>
+                    <th scope="col">Fullname</th>
+                    <th scope="col">DOB</th>
+                    <th scope="col">Sex</th>
+                    <th scope="col">Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <th scope="row">{{ patient.id_number }}</th>
+                    <td>{{ patient.fullname }}</td>
+                    <td>{{ patient.dob }}</td>
+                    <td>{{ patient.sex }}</td>
+                    <td class="d-flex gap-2">
+                        <a class="btn btn-primary" href="{{ url_for('admin.view_patient', id=patient.id) }}">
+                            View
+                        </a>
+                        <a class="btn btn-outline-success" href="{{ url_for('admin.view_patient', id=patient.id) }}">
+                            Edit
+                        </a>
+
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+              </div>
+            {% endif %}
+        </div>
+    </div>
+{% endif %}
+{% endblock %}

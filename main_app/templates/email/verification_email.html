@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Verification</title>
+</head>
+<body>
+    <h2>Verify Your Email Address</h2>
+    <p>Dear {{ username }},</p>
+    <p>Please copy the token below and paste it in the verification tab</p>
+    <div class="p-2 rounded-2 my-2 bg-info">
+        <p>{{ verification_token }}</p>
+    </div>
+    <p>If you did not request this verification, please ignore this email.</p>
+    <p>Thank you!</p>
+</body>
+</html>

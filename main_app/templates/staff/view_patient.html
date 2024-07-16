@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+{% block title %}
+HPFM | View Patient
+{% endblock %}
+
+
+{% block content %}
+    {% if current_user.is_authenticated  %}
+        {% if current_user.role == 'staff_one' %}
+        <div class="container flex-column justify-content-center align-items-center  gap-2 my-5">
+            <div class="col-12 col-sm-8">
+            <a href="{{ url_for('staff_r.manage_patients') }}" class="btn btn-outline-primary mb-5">Back to Patients</a>
+            <div class="col-12 w-auto p-3 shadow rounded-2 mb-5 mb-sm-0 text-center">
+                <h3>Patient Record</h3>
+                <hr />
+                <h6 class="text-uppercase">ID Number</h6>
+                <h5>{{ patient.id_number }}</h5>
+                <hr />
+                <h6 class="text-uppercase">Fullname</h6>
+                <h5>{{ patient.fullname }}</h5>
+                <hr />
+                <h6 class="text-uppercase">Sex</h6>
+                <h5>{{ patient.sex }}</h5>
+                <hr />
+                <h6 class="text-uppercase">DOB</h6>
+                <h5>{{ patient.dob }}</h5>
+                <hr />
+                <h6 class="text-uppercase">Address</h6>
+                <h5>{{ patient.address }}</h5>
+                <hr />
+                <h6 class="text-uppercase">Email</h6>
+                <h5>{{ patient.email }}</h5>
+                <hr />
+                <h6 class="text-uppercase">Cell</h6>
+                <h5>{{ patient.cell }}</h5>
+                <hr />
+                <a href="#" class="btn btn-success">Edit Patient</a>
+    
+            </div>
+        </div>
+    </div>
+        {% endif %}
+        {% if current_user.role == 'staff_two' or current_user.role == 'admin' %}
+        <div class="container d-flex flex gap-2 my-5">
+            <div class="col-12 col-sm-4 p-3 shadow rounded-2 mb-5 mb-sm-0 text-center">
+                <h3>Patient Record</h3>
+                <hr />
+                <h6 class="text-uppercase">ID Number</h6>
+                <h5>{{ patient.id_number }}</h5>
+                <hr />
+                <h6 class="text-uppercase">Fullname</h6>
+                <h5>{{ patient.fullname }}</h5>
+                <hr />
+                <h6 class="text-uppercase">Sex</h6>
+                <h5>{{ patient.sex }}</h5>
+                <hr />
+                <h6 class="text-uppercase">DOB</h6>
+                <h5>{{ patient.dob }}</h5>
+                <hr />
+                <h6 class="text-uppercase">Address</h6>
+                <h5>{{ patient.address }}</h5>
+                <hr />
+                <h6 class="text-uppercase">Email</h6>
+                <h5>{{ patient.email }}</h5>
+                <hr />
+                <h6 class="text-uppercase">Cell</h6>
+                <h5>{{ patient.cell }}</h5>
+                <hr />
+    
+            </div>
+    
+            <div class="col-12 col-sm-7 flex-grow-1 p-3 shadow rounded-2">
+                <div class="d-flex justify-content-between">
+                    <h3 class="text-center">Patient Medical Records</h3>
+                    <a href="#collapseForm" data-bs-toggle="collapse" class="btn btn-primary" role="button" aria-expanded="false" id="formClose" aria-controls="collapseForm">Add New</a>
+                </div>
+                <div class="container d-flex flex-column">
+                    <div class="w-100 collapse" id="collapseForm">
+                    <form action="{{ url_for('staff_r.view_patient', id=patient.id )}}" method="post">
+                        {{ form.hidden_tag() }}
+                        <div class="form-group my-4">
+                            {{ form.diagnosis.label(class="fw-bold") }}
+                            {{ form.diagnosis(class="form-control") }}
+                        </div>
+                        <div class="form-group">
+                            {{ form.prescription.label(class="fw-bold") }}
+                            {{ form.prescription(class="form-control") }}
+                        </div>
+                        {{ form.submit(class="btn btn-primary mt-3") }}
+                    </form>
+                    </div>
+                    <div class="w-100 my-4">
+                        {% if medical_records %}
+                             
+                <div class="table-responsive"></div>
+                <table class="table table-hover table-striped table-bordered table-responsive">
+                    <thead>
+                      <tr>
+                        <th scope="col text-center">Patient ID No</th>
+                        <th scope="col text-center">Patient Name</th>
+                        <th scope="col text-center">Date Added</th>
+                        <th scope="col text-center">Date Updated</th>
+                        <th scope="col text-center">Action</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                        {% for m_rec in medical_records.get('medical_records')|sort(attribute='created_at', reverse = True) %}
+                      <tr>
+                        <th scope="row">{{ patient.id_number }}</th>
+                        <td>{{ patient.fullname }}</td>
+                        <td>{{ m_rec.created_at }}</td>
+                        <td>{{ m_rec.updated_at }}</td>
+                        <td class="d-flex gap-2">
+                            <a href="#collapseRec{{loop.index}}" data-bs-toggle="collapse" class="btn btn-primary" role="button" aria-expanded="false" id="btnViewClose{{loop.index}}" aria-controls="collapseRec{{loop.index}}">View</a>
+                            <a class="btn btn-outline-success" href="#">
+                                Edit
+                            </a>
+    
+                        </td>
+                      </tr>
+                      <tr class="collapse" id="collapseRec{{loop.index}}">
+                        <td colspan="3">
+              
+                                <h6>Diagnosis</h6>
+                                {{m_rec.diagnosis}}
+                    
+                    </td>
+                        <td colspan="2">
+                       
+                                <h6>Prescription</h6>
+                                {{m_rec.prescription}}
+    
+                        </td>
+                      </tr>
+                    </tbody>
+                    {% endfor %}
+                  </table>
+                  </div>
+                            
+                        {% endif %}
+                    </div>
+                </div>
+                
+            </div>    
+        </div>
+        {% endif %}   
+    {% endif %}
+{% endblock %}

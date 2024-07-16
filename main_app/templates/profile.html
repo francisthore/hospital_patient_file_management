@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block title %}My Profile{% endblock %}
+
+{% block content %}
+
+    {% if current_user.is_authenticated %}
+        <div class="Container bg-success">
+            
+        </div>
+
+
+
+
+        Hi {{ current_user.username }}
+        {% if staff %}
+            <p>{{staff.fullname}}</p>
+            <p>{{staff.email}}</p>
+            <p>{{staff.sex}}</p>
+            <p>{{staff.id_number}}</p>
+        {% endif%}
+    {% endif %}
+
+{% endblock %}

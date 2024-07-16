@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block content %}
+{% if current_user.is_authenticated %}
+<div class="container d-flex flex-wrap mt-4">
+    {% if current_user.role == 'staff_one' %}
+    <div class="col-12 col-md-9 border p-3 rounded shadow">
+        <h3 class="text-center">Hi {{ current_user.username }} Welcome!</h3>
+        <div class="mt-5 w-100 p-2 bg-light">
+           <a href="{{ url_for('staff_r.manage_patients') }}" class="fs-1 mb-5 p-5 d-flex align-items-center justify-content-center btn btn-primary">Manage Patients</a>
+           <a href="#" class="fs-1 p-5 d-flex align-items-center justify-content-center btn btn-success">View Appointments</a>
+        </div>
+    </div>
+    {% elif current_user.role == 'staff_one' %}
+    <div class="col-12 col-md-9 border p-3 rounded shadow">
+        <h3 class="text-center">Hi {{ current_user.username }} Welcome!</h3>
+
+        <div class=" d-flex flex-wrap gap-3 gap-sm-5 justify-content-center align-items-center">
+            <div class="col-12 col-sm-5 p-3 p-sm-5 bg-success rounded-1">
+                <h2 class="text-center text-white">Manage Patients</h2>
+            </div>
+
+            <div class="col-12 col-sm-5 p-3 p-sm-5 bg-info rounded-1">
+                <h2 class="text-center text-white">Manage Staff</h2>
+            </div>
+
+            <div class="col-12 col-sm-5 p-3 p-sm-5 bg-warning rounded-1">
+                <h2 class="text-center text-white">Manage Medical Records</h2>
+            </div>
+
+            <div class="col-12 col-sm-5 p-3 p-sm-5 bg-secondary rounded-1">
+                <h2 class="text-center text-white">Manage Appointments</h2>
+            </div>
+        </div>
+
+    </div>
+    {% else %}
+        <h1>Who are you?</h1>
+    {% endif %}
+    
+    <div class="col-12 col-md-2 flex-grow-md-1 ms-md-3 p-3 border shadow rounded">
+        <div class="rounded shadow w-100 p-2 mb-3">
+            <h5 class="text-center">Total Staff</h5>
+            <hr />
+            <h1 class="text-center">{{ stats.get('staff') }}</h1>
+        </div>
+
+        <div class="rounded shadow w-100 p-2 mb-3">
+            <h5 class="text-center">Total Patients</h5>
+            <hr />
+            <h1 class="text-center">{{ stats.get('patients') }}</h1>
+        </div>
+
+        <div class="rounded shadow w-100 p-2 mb-3">
+            <h5 class="text-center">Total Records</h5>
+            <hr />
+            <h1 class="text-center">{{ stats.get('medical_records') }}</h1>
+        </div>
+
+    </div>
+</div>
+{% endif %}
+{% endblock%}

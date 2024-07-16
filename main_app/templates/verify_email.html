@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block content %}
+    {% if current_user.is_authenticated %}
+    <div class="d-flex justify-content-center align-items-center p-5">
+        
+        <div class="w-auto bg-white rounded-2 shadow p-3">
+            <h3>Verify Email</h3>
+            <form method="post" action="{{ url_for('auth.verify_email') }}">
+                {{ form.hidden_tag() }}
+                <div class="mt-2 form-group">
+                    {{ form.v_token.label }} {{ form.v_token(class="form-control") }}
+                </div>
+                <div class="mt-2 form-group">
+                    {{ form.submit(class="btn btn-primary") }}
+                </div>
+            </form>
+        </div>
+        {% endif %}
+    </div>
+{% endblock%}

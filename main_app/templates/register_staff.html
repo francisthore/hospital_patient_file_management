@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    {% if current_user.is_authenticated %}
+    <h1>Staff Registration</h1>
+    <form method="POST" action="{{ url_for('auth.register_staff') }}">
+        {{ form.hidden_tag() }}
+        <div class="form-group">
+            {{ form.fullname.label }} {{ form.fullname(class="form-control") }}
+        </div>
+        <div class="form-group">
+            {{ form.id_number.label }} {{ form.id_number(class="form-control") }}
+        </div>
+        <div class="form-group">
+            {{ form.dob.label }} {{ form.dob(class="form-control") }}
+        </div>
+        <div class="form-group">
+            {% for sex_choice in form.sex %}
+            <tr>
+            
+            <td>{{ sex_choice.label }} </td>
+        <td> {{ sex_choice(class="form-check-input") }}</td>
+            </tr>
+            {% endfor %}
+        </div>
+        <div class="form-group">
+            {{ form.address.label }} {{ form.address(class="form-control") }}
+        </div>
+        <div class="form-group">
+            {{ form.email.label }} {{ form.email(class="form-control") }}
+        </div>
+        <div class="form-group">
+            {{ form.cell.label }} {{ form.cell(class="form-control") }}
+        </div>
+        <div class="form-group">
+            {{ form.submit(class="btn btn-primary") }}
+        </div>
+    </form>
+    {% endif %}
+</div>
+{% endblock%}

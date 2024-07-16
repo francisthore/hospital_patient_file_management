@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex p-5 justify-content-center align-items-center">
+    <div class="p-3 w-auto rounded-2 shadow bg-white">
+    <h3>Sign In</h3>
+    <form method="POST" action="{{ url_for('auth.login') }}">
+        {{ form.hidden_tag() }}
+        <div class="form-group mt-2">
+            {{ form.username.label }} {{ form.username(class="form-control") }}
+        </div>
+        <div class="form-group mt-2">
+            {{ form.password.label }} {{ form.password(class="form-control") }}
+        </div>
+        <div class="form-group mt-2">
+            {{ form.submit(class="btn btn-primary") }}
+        </div>
+        <hr />
+        <span class="d-flex justify-content-center fw-bold align-items-center">Not yet registered? <a href="{{ url_for('auth.register') }}" class="ms-2 fw-bold">Register</a></span>
+
+    </form>
+</div>
+</div>
+{% endblock %}
