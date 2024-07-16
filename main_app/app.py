@@ -58,5 +58,10 @@ def handle_not_found(err):
     return render_template('not_found.html')
 
 
+@app.route('/', methods=['GET', 'POST'], strict_slashes=False)
+def index():
+    """Index of app"""
+    return redirect(url_for('auth.login'))
+
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5001, debug=True)
+    app.run(host='0.0.0.0', port=5001)
