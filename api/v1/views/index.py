@@ -2,8 +2,17 @@
 """Landing view of the api"""
 from api.v1.views import app_views
 from flask import jsonify
+from flask_login import current_user
 from models import storage
+from utilities.decorators import (staff_one_required,
+                                  staff_two_required, admin_required)
 
+@app_views.route('/test', methods=['GET'], strict_slashes=False)
+def test_route():
+    if current_user.is_authenticated:
+        return jsonify({'message': f'Hello, {current_user.role}'}), 200
+    else:
+        return jsonify({'message': 'User not authenticated'}), 403
 
 @app_views.route('/status', methods=['GET'], strict_slashes=False)
 def get_status():

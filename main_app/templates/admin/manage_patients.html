@@ -30,12 +30,12 @@
                     <td>{{ patient.fullname }}</td>
                     <td>{{ patient.dob }}</td>
                     <td>{{ patient.sex }}</td>
-                    <td class="d-flex gap-2">
+                    <td class="d-flex gap-2 mt-3">
                         <a class="btn btn-primary" href="{{ url_for('admin.view_patient', id=patient.id) }}">
                             View
                         </a>
-                        <a class="btn btn-outline-success" href="{{ url_for('admin.view_patient', id=patient.id) }}">
-                            Edit
+                        <a class="btn btn-outline-success" href="{{ url_for('admin.edit_patient', patient_id=patient.id) }}">
+                            Edit Patient
                         </a>
 
                     </td>

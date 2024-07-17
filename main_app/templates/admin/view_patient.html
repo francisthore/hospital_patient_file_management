@@ -27,6 +27,9 @@
             <h6 class="text-uppercase">Cell</h6>
             <h5>{{ patient.cell }}</h5>
             <hr />
+            <a class="btn btn-outline-success" href="{{ url_for('admin.edit_patient', patient_id=patient.id) }}">
+                Edit Patient
+            </a>
 
         </div>
 
@@ -73,7 +76,7 @@
                     <td>{{ m_rec.updated_at }}</td>
                     <td class="d-flex gap-2">
                         <a href="#collapseRec{{loop.index}}" data-bs-toggle="collapse" class="btn btn-primary" role="button" aria-expanded="false" id="btnViewClose{{loop.index}}" aria-controls="collapseRec{{loop.index}}">View</a>
-                        <a class="btn btn-outline-success" href="#">
+                        <a class="btn btn-outline-success" href="{{ url_for('admin.edit_medical_record', rec_id=m_rec.id )}}">
                             Edit
                         </a>
 

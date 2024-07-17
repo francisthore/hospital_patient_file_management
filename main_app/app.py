@@ -9,8 +9,9 @@ from flask import Flask, render_template, request, flash, redirect, url_for
 from flask_cors import CORS
 from flask_wtf import CSRFProtect
 from flask_login import LoginManager
-from api.v1 import app as backend_app
+from routes.auth import login_manager
 import os
+from api.v1.app import api
 from dotenv import load_dotenv
 
 
@@ -29,8 +30,9 @@ app.register_blueprint(auth)
 app.register_blueprint(user_profile)
 app.register_blueprint(admin)
 app.register_blueprint(staff_r)
+app.register_blueprint(api)
 CORS(app)
-login_manager = LoginManager(app)
+login_manager.init_app(app)
 login_manager.login_view = 'auth.login'
 csrf = CSRFProtect(app)
 
@@ -38,12 +40,6 @@ csrf = CSRFProtect(app)
 @login_manager.user_loader
 def load_user(user_id):
     return storage.get('User', user_id)
-
-
-@app.before_request
-def link_session():
-    """Links session cookies between the front end and API"""
-    request.backend_app = backend_app
 
 
 @app.errorhandler(403)
@@ -64,4 +60,4 @@ def index():
     return redirect(url_for('auth.login'))
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5001)
+    app.run(host='0.0.0.0', port=5001, debug=True)

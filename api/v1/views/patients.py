@@ -6,9 +6,12 @@ from flask import jsonify, abort, request
 from models import storage
 from markupsafe import escape
 from models.patient import Patient
+from utilities.decorators import (staff_one_required,
+                                  staff_two_required, admin_required)
 
 
 @app_views.route('/patients', methods=['GET'], strict_slashes=False)
+@staff_one_required
 def get_patients():
     """Retrives and serves all patients"""
     data = [o.to_dict() for o in storage.all('Patient').values()]
@@ -17,6 +20,7 @@ def get_patients():
 
 @app_views.route('/patients/<string:patient_id>',
                  methods=['GET'], strict_slashes=False)
+@staff_one_required
 def get_patient(patient_id):
     """Retrieves one patient from db"""
     p_id = escape(patient_id)
@@ -28,6 +32,7 @@ def get_patient(patient_id):
 
 @app_views.route('/patients/<string:patient_id>/medical_records',
                  methods=['GET'], strict_slashes=False)
+@staff_two_required
 def get_patient_medical_records(patient_id):
     """Retrieves one patient from db and their records"""
     p_id = escape(patient_id)
@@ -40,6 +45,7 @@ def get_patient_medical_records(patient_id):
 
 @app_views.route('/patients/<string:patient_id>', methods=['DELETE'],
                  strict_slashes=False)
+@admin_required
 def delete_patient(patient_id):
     """Deletes a patient from storage"""
     p_id = escape(patient_id)
@@ -52,6 +58,7 @@ def delete_patient(patient_id):
 
 
 @app_views.route('/patients', methods=['POST'], strict_slashes=False)
+@staff_one_required
 def create_patient():
     """Creates a patient"""
     if not request.is_json:
@@ -75,6 +82,7 @@ def create_patient():
 
 @app_views.route('/patients/<string:patient_id>', methods=['PUT'],
                  strict_slashes=False)
+@staff_one_required
 def update_patient(patient_id):
     """Updates a patient's details"""
     p_id = escape(patient_id)
@@ -90,5 +98,5 @@ def update_patient(patient_id):
         ignore = ['id', 'created_at', 'updated_at']
         if k not in ignore:
             setattr(patient, k, v)
-    patient.save()
+    patient.save() 
     return jsonify(patient.to_dict()), 200

@@ -2,14 +2,18 @@
 """Handles API calls for the staff model"""
 from api.v1.views import app_views
 from flask import jsonify, abort, request
+from flask_login import login_required
 from models import storage
 from markupsafe import escape
 from models.staff import Staff
 from models.user import User
+from utilities.decorators import (staff_one_required,
+                                  staff_two_required, admin_required)
 
 
 @app_views.route('/staff/<string:user_id>', methods=['GET'],
                  strict_slashes=False)
+@staff_one_required
 def get_staff_by_id(user_id):
     """Retrieves staff member's details"""
     user_id = escape(user_id)
@@ -20,6 +24,7 @@ def get_staff_by_id(user_id):
 
 
 @app_views.route('/staff', methods=['GET'], strict_slashes=False)
+@staff_one_required
 def get_staff():
     """Retrieves all staff members"""
     staff = storage.all(Staff)
@@ -29,6 +34,7 @@ def get_staff():
 
 @app_views.route('/staff/<string:user_id>', methods=['DELETE'],
                  strict_slashes=False)
+@admin_required
 def delete_staff(user_id):
     """Deletes a staff member"""
     user_id = escape(user_id)
@@ -41,6 +47,7 @@ def delete_staff(user_id):
 
 
 @app_views.route('/staff', methods=['POST'], strict_slashes=False)
+@login_required
 def create_staff():
     """Creates a new staff member"""
     data = request.get_json()
@@ -74,10 +81,11 @@ def create_staff():
 
 @app_views.route('/staff/<string:user_id>', methods=['PUT'],
                  strict_slashes=False)
+@staff_one_required
 def update_staff(user_id):
     """Updates a staff member"""
     user_id = escape(user_id)
-    staff = storage.get_by_user_id(Staff, user_id)
+    staff = storage.get(Staff, user_id)
     if not staff:
         abort(404)
     data = request.get_json()
@@ -95,6 +103,7 @@ def update_staff(user_id):
 
 @app_views.route('/staff/<string:user_id>/appointments', methods=['GET'],
                  strict_slashes=False)
+@staff_one_required
 def get_staff_appointments(user_id):
     """Retrieves all appointments for a staff member"""
     user_id = escape(user_id)

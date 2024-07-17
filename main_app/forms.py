@@ -68,6 +68,21 @@ class StaffRegistrationForm(FlaskForm):
     submit = SubmitField('Register')
 
 
+class EditStaffForm(FlaskForm):
+    """Creates a Staff edit form fields"""
+    fullname = StringField('Fullname', validators=[DataRequired()])
+    id_number = StringField('ID Number', validators=[DataRequired()])
+    dob = DateField('DOB', validators=[DataRequired()],
+                    format='%Y-%m-%d')
+    sex = RadioField('Sex', validators=[DataRequired()],
+                     choices=['Male', 'Female'])
+    address = TextAreaField('Address', validators=[DataRequired(),
+                                                   Length(min=2, max=256)])
+    email = StringField('Email', validators=[DataRequired(), Email()])
+    cell = IntegerField('Cell', validators=[DataRequired()])
+    submit = SubmitField('Update')
+
+
 class LoginForm(FlaskForm):
     """Creates a login form fields"""
     username = StringField('Username', validators=[DataRequired()])
@@ -93,8 +108,22 @@ class AddPatientForm(FlaskForm):
                                                    Length(min=2, max=256)])
     email = StringField('Email', validators=[Email()])
     cell = IntegerField('Cell', validators=[])
-    submit = SubmitField('Register')
+    submit = SubmitField('Add Patient')
 
+
+class EditPatientForm(FlaskForm):
+    """Creates a form to edit a patient"""
+    fullname = StringField('Fullname', validators=[DataRequired()])
+    id_number = StringField('ID Number', validators=[DataRequired()])
+    dob = DateField('DOB', validators=[DataRequired()],
+                    format='%Y-%m-%d')
+    sex = RadioField('Sex', validators=[DataRequired()],
+                     choices=['Male', 'Female'])
+    address = TextAreaField('Address', validators=[DataRequired(),
+                                                   Length(min=2, max=256)])
+    email = StringField('Email', validators=[Email()])
+    cell = IntegerField('Cell', validators=[])
+    submit = SubmitField('Edit Patient')
 
 class SearchPatientForm(FlaskForm):
     """Creates a form to search patient"""
@@ -103,7 +132,7 @@ class SearchPatientForm(FlaskForm):
 
 
 class AddMedicalrecordForm(FlaskForm):
-    """Create a form to search a patient"""
+    """Create a form to add medical record"""
     diagnosis = TextAreaField('Diagnosis',
                               validators=[DataRequired(),
                                           Length(min=10, max=1024)])
@@ -112,3 +141,15 @@ class AddMedicalrecordForm(FlaskForm):
                                  validators=[DataRequired(),
                                              Length(min=10, max=1024)])
     submit = SubmitField('Add Record')
+
+
+class EditMedicalrecordForm(FlaskForm):
+    """Create a form to search a patient"""
+    diagnosis = TextAreaField('Diagnosis',
+                              validators=[DataRequired(),
+                                          Length(min=10, max=1024)])
+
+    prescription = TextAreaField('Prescription',
+                                 validators=[DataRequired(),
+                                             Length(min=10, max=1024)])
+    submit = SubmitField('Edit Record')

@@ -43,7 +43,7 @@ HPFM | Patients
                         <a class="btn btn-primary" href="{{ url_for('staff_r.view_patient', id=patient.id) }}">
                             View
                         </a>
-                        <a class="btn btn-outline-success" href="{{ url_for('staff_r.view_patient', id=patient.id) }}">
+                        <a class="btn btn-outline-success" href="{{ url_for('staff_r.edit_patient', patient_id=patient.id) }}">
                             Edit
                         </a>
 

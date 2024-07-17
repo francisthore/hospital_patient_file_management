@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 """Handles authentication routes"""
 from flask import render_template, flash, redirect, url_for
-from flask_login import login_user, logout_user, current_user, login_required
+from flask_login import login_user, logout_user, current_user, login_required, LoginManager
 from models import storage
 from markupsafe import escape
 from main_app.forms import RegistrationForm, LoginForm, StaffRegistrationForm, VerifyEmailForm
@@ -14,6 +14,7 @@ import requests
 
 auth = Blueprint('auth', __name__)
 
+login_manager = LoginManager()
 
 @auth.route('/register', methods=['GET', 'POST'], strict_slashes=False)
 def register():

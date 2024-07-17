@@ -1,14 +1,19 @@
 #!/usr/bin/python3
 """Module to handle admin routes"""
-from flask import Blueprint, render_template, flash, redirect, url_for, abort
+from flask import (Blueprint, render_template, flash,
+                   redirect, url_for, abort, request)
 from flask_login import login_required, current_user
 import requests
 from utilities.decorators import admin_required
 from functools import wraps
-from main_app.forms import AddPatientForm, SearchPatientForm, AddMedicalrecordForm
+from main_app.forms import (AddPatientForm,
+                            SearchPatientForm,
+                            AddMedicalrecordForm,
+                            EditPatientForm, EditMedicalrecordForm)
 import json
 from markupsafe import escape
 from models.patient import Patient
+from models.medical_record import MedicalRecord
 from models import storage
 
 
@@ -26,9 +31,12 @@ def admin_dashboard():
             stats = response.json()
         else:
             stats = {}
+    url = 'http://0.0.0.0:5000/api/v1/test'
+    response = requests.get(url)
+    res = response.json()
     return render_template('admin/admin_dashboard.html',
                            current_user=current_user,
-                           stats=stats)
+                           stats=stats, res=res)
 
 
 @admin.route('/patients', methods=['GET', 'POST'],
@@ -132,4 +140,89 @@ def view_patient(id):
                                    current_user=current_user,
                                    form=form)
         flash('Patient not found', 'danger')
-        return redirect(url_for('admin.admin_dashboard'))   
+        return redirect(url_for('admin.admin_dashboard'))
+    
+
+@admin.route('/edit_patient/<string:patient_id>', methods=['GET', 'POST'],
+             strict_slashes=False)
+def edit_patient(patient_id):
+    """Edits a patient"""
+    form = EditPatientForm()
+    p_id = escape(patient_id)
+    patient = storage.get(Patient, p_id)
+    if patient is None:
+        flash('Patient not found', 'danger')
+        abort(404)
+    if request.method ==  'GET':
+        form.fullname.data = patient.fullname
+        form.id_number.data = patient.id_number
+        form.dob.data = patient.dob
+        form.sex.data = patient.sex
+        form.address.data = patient.address
+        form.email.data = patient.email
+        form.cell.data = patient.cell
+
+        return render_template('admin/edit_patient.html',
+                               form=form, patient=patient)
+
+    if form.validate_on_submit():
+        data = {
+        'fullname': form.fullname.data,
+        'id_number': form.id_number.data,
+        'dob': str(form.dob.data),
+        'sex': form.sex.data,
+        'address': form.address.data,
+        'email': form.email.data,
+        'cell': form.cell.data
+        }
+        url = 'http://0.0.0.0:5000/api/v1/patients/{}'.format(p_id)
+        headers = {'Content-Type': 'application/json'}
+        response = requests.put(url, headers=headers, data=json.dumps(data))
+        if response.status_code == 200:
+            storage.reload()
+            flash('Patient updated successfully', 'success')
+            return redirect(url_for('admin.view_patient', id=p_id))
+        else:
+            flash('An error occurred. Please try again', 'danger')
+            return redirect(url_for('user_profile.profile'))
+    if form.errors != {}:
+        for category, error_msg in form.errors.items():
+            flash(str(error_msg[0]), 'danger')
+
+
+@admin.route('/edit_medical_record/<string:rec_id>', methods=['GET', 'POST'],
+             strict_slashes=False)
+@admin_required
+def edit_medical_record(rec_id):
+    """Edits a medical record"""
+    rec_id = escape(rec_id)
+    form = EditMedicalrecordForm()
+    rec = storage.get(MedicalRecord, rec_id)
+    if rec is None:
+        flash ("Medical record not found", 'danger')
+        abort(404)
+    if request.method == 'GET':
+        form.diagnosis.data = rec.diagnosis
+        form.prescription.data = rec.prescription
+
+        return render_template('admin/edit_medical_record.html',
+                               form=form, rec=rec)
+    
+    if form.validate_on_submit():
+        data = {
+            'diagnosis': form.diagnosis.data,
+            'prescription': form.prescription.data
+        }
+        url = 'http://0.0.0.0:5000/api/v1/medical_records/{}'.format(rec_id)
+        headers = {'Content-Type': 'application/json'}
+        response = requests.put(url, headers=headers, data=json.dumps(data))
+        if response.status_code == 200:
+            storage.reload()
+            flash('Record updated successfully', 'success')
+            return redirect(url_for('admin.manage_patients'))
+        else:
+            flash('An error occurred. Please try again', 'danger')
+            return redirect(url_for('admin.manage_patients'))
+    if form.errors != {}:
+        for category, error_msg in form.errors.items():
+            flash(str(error_msg[0]), 'danger')

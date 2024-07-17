@@ -2,12 +2,19 @@
 """
 Module to handle staff views
 """
-from flask import Blueprint, redirect, render_template, url_for, flash
+from flask import (abort, Blueprint, redirect,
+                   render_template, url_for, flash, request)
 from flask_login import current_user
 from utilities.decorators import staff_one_required, staff_two_required
 from models import storage
-from main_app.forms import SearchPatientForm, AddMedicalrecordForm, AddPatientForm
+from main_app.forms import (SearchPatientForm,
+                            AddMedicalrecordForm,
+                            AddPatientForm,
+                            EditPatientForm,
+                            EditStaffForm, EditMedicalrecordForm)
 from models.patient import Patient
+from models.staff import Staff
+from models.medical_record import MedicalRecord
 from markupsafe import escape
 import json
 import requests
@@ -130,3 +137,142 @@ def add_patient():
         for category, error_msg in form.errors.items():
             flash(str(error_msg[0]), 'danger')
     return render_template('staff/patients_add.html', form=form, current_user=current_user)
+
+
+@staff_r.route('/edit_patient/<string:patient_id>', methods=['GET', 'POST'],
+               strict_slashes=False)
+@staff_one_required
+def edit_patient(patient_id):
+    """Edits a patient"""
+    form = EditPatientForm()
+    p_id = escape(patient_id)
+    patient = storage.get(Patient, p_id)
+    if patient is None:
+        flash('Patient not found', 'danger')
+        abort(404)
+    if request.method ==  'GET':
+        form.fullname.data = patient.fullname
+        form.id_number.data = patient.id_number
+        form.dob.data = patient.dob
+        form.sex.data = patient.sex
+        form.address.data = patient.address
+        form.email.data = patient.email
+        form.cell.data = patient.cell
+
+        return render_template('staff/edit_patient.html',
+                               form=form, patient=patient)
+
+    if form.validate_on_submit():
+        data = {
+        'fullname': form.fullname.data,
+        'id_number': form.id_number.data,
+        'dob': str(form.dob.data),
+        'sex': form.sex.data,
+        'address': form.address.data,
+        'email': form.email.data,
+        'cell': form.cell.data
+        }
+        url = 'http://0.0.0.0:5000/api/v1/patients/{}'.format(p_id)
+        headers = {
+            'Content-Type': 'application/json',
+            }
+        response = requests.put(url, headers=headers, data=json.dumps(data))
+        if response.status_code == 200:
+            storage.reload()
+            flash('Patient updated successfully', 'success')
+            return redirect(url_for('staff_r.view_patient', id=p_id))
+        elif response.status_code == 403:
+            abort(403)
+        elif response.status_code == 403:
+            abort(403)
+        else:
+            flash('An error occurred. Please try again', 'danger')
+            abort(500)
+    if form.errors != {}:
+        for category, error_msg in form.errors.items():
+            flash(str(error_msg[0]), 'danger')
+
+
+@staff_r.route('edit_staff/<string:staff_id>', methods=['GET', 'POST'],
+             strict_slashes=False)
+def edit_staff(staff_id):
+    """Edits staff member details"""
+    form = EditStaffForm()
+    s_id = escape(staff_id)
+    staff = storage.get(Staff, s_id)
+    if staff is None:
+        flash('Staff member not found', 'danger')
+        abort(404)
+    if request.method == 'GET':
+        form.fullname.data = staff.fullname
+        form.id_number.data = staff.id_number
+        form.dob.data = staff.dob
+        form.sex.data = staff.sex
+        form.address.data = staff.address
+        form.email.data = staff.email
+        form.cell.data = staff.cell
+
+        return render_template('staff/edit_staff.html',
+                               form=form, staff=staff)
+    
+    if form.validate_on_submit():
+        data = {
+        'fullname': form.fullname.data,
+        'id_number': form.id_number.data,
+        'dob': str(form.dob.data),
+        'sex': form.sex.data,
+        'address': form.address.data,
+        'email': form.email.data,
+        'cell': form.cell.data
+        }
+        url = 'http://0.0.0.0:5000/api/v1/staff/{}'.format(staff.id)
+        headers = {'Content-Type': 'application/json'}
+        response = requests.put(url, headers=headers, data=json.dumps(data))
+        if response.status_code == 200:
+            storage.reload()
+            flash('Staff updated successfully', 'success')
+            return redirect(url_for('user_profile.profile', id=s_id))
+        else:
+            flash('An error occurred. Please try again', 'danger')
+    if form.errors != {}:
+        for category, error_msg in form.errors.items():
+            flash(str(error_msg[0]), 'danger')
+
+
+
+@staff_r.route('/edit_medical_record/<string:rec_id>', methods=['GET', 'POST'],
+             strict_slashes=False)
+@staff_two_required
+def edit_medical_record(rec_id):
+    """Edits a medical record"""
+    rec_id = escape(rec_id)
+    form = EditMedicalrecordForm()
+    rec = storage.get(MedicalRecord, rec_id)
+    if rec is None:
+        flash ("Medical record not found", 'danger')
+        abort(404)
+    if request.method == 'GET':
+        form.diagnosis.data = rec.diagnosis
+        form.prescription.data = rec.prescription
+
+        return render_template('staff/edit_medical_record.html',
+                               form=form, rec=rec)
+    
+    if form.validate_on_submit():
+        data = {
+            'diagnosis': form.diagnosis.data,
+            'prescription': form.prescription.data
+        }
+        url = 'http://0.0.0.0:5000/api/v1/medical_records/{}'.format(rec_id)
+        headers = {'Content-Type': 'application/json'}
+        response = requests.put(url, headers=headers, data=json.dumps(data))
+        if response.status_code == 200:
+            storage.reload()
+            flash('Record updated successfully', 'success')
+            return redirect(url_for('staff_r.manage_patients'))
+        else:
+            flash('An error occurred. Please try again', 'danger')
+            return redirect(url_for('staff_r.manage_patients'))
+    if form.errors != {}:
+        for category, error_msg in form.errors.items():
+            flash(str(error_msg[0]), 'danger')
