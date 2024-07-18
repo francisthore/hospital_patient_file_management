@@ -21,6 +21,7 @@ def get_status():
 
 
 @app_views.route('/stats', methods=['GET'], strict_slashes=False)
+@staff_one_required
 def get_stats():
     """Gets the object stats"""
     data = {

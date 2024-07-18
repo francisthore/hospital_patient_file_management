@@ -4,11 +4,15 @@ from api.v1.views import app_views
 from flask import jsonify, abort, request
 from models import storage
 from markupsafe import escape
+from flask_login import login_required
 from models.user import User
+from utilities.decorators import (staff_one_required,
+                                  staff_two_required, admin_required)
 
 
 @app_views.route('/users/<string:user_id>', methods=['GET'],
                  strict_slashes=False)
+@login_required
 def get_user_by_id(user_id):
     """Retrieves user's details"""
     user_id = escape(user_id)
@@ -19,6 +23,7 @@ def get_user_by_id(user_id):
 
 
 @app_views.route('/users', methods=['GET'], strict_slashes=False)
+@admin_required
 def get_users():
     """Retrieves all users"""
     users = storage.all(User)
@@ -28,6 +33,7 @@ def get_users():
 
 @app_views.route('/users/<string:user_id>', methods=['DELETE'],
                  strict_slashes=False)
+@admin_required
 def delete_user(user_id):
     """Deletes a user"""
     print('Deleting user')
@@ -63,6 +69,7 @@ def create_user():
 
 @app_views.route('/users/<string:user_id>', methods=['PUT'],
                  strict_slashes=False)
+@login_required
 def update_user(user_id):
     """Updates a user"""
     data = request.get_json()
@@ -80,16 +87,3 @@ def update_user(user_id):
         user.password_hash = data['password_hash']
     storage.save()
     return jsonify(user.to_dict()), 200
-
-
-@app_views.route('/users/<string:user_id>/staff', methods=['GET'],
-                 strict_slashes=False)
-def get_user_staff(user_id):
-    """Retrieves all staff associated with a user"""
-    user_id = escape(user_id)
-    user = storage.get_by_user_id(User, user_id)
-    if not user:
-        abort(404)
-    staff = user.staff
-    staff = [staff.to_dict() for staff in staff]
-    return jsonify(staff), 200

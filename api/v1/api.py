@@ -5,15 +5,12 @@ from flask import Blueprint, jsonify
 from flask_cors import CORS
 from markupsafe import escape
 from models import storage
-from flask_wtf import CSRFProtect
 from models.user import User
 import os
 from dotenv import load_dotenv
 
-
-
 api = Blueprint('api', __name__)
-csrf = CSRFProtect()
+
 
 @api.teardown_app_request
 def close_storage(e):

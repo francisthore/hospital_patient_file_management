@@ -2,7 +2,7 @@
 """Module to handle admin routes"""
 from flask import (Blueprint, render_template, flash,
                    redirect, url_for, abort, request)
-from flask_login import login_required, current_user
+from flask_login import current_user
 import requests
 from utilities.decorators import admin_required
 from functools import wraps
@@ -25,18 +25,16 @@ admin = Blueprint('admin', __name__, url_prefix='/admin')
 @admin_required
 def admin_dashboard():
     """Renders the admin dashboard"""
-    url = 'http://0.0.0.0:5000/api/v1/stats'
-    with requests.get(url) as response:
+    session_cookies = request.cookies
+    url = 'http://0.0.0.0:5001/api/v1/stats'
+    with requests.get(url, cookies=session_cookies) as response:
         if response.status_code == 200:
             stats = response.json()
         else:
             stats = {}
-    url = 'http://0.0.0.0:5000/api/v1/test'
-    response = requests.get(url)
-    res = response.json()
     return render_template('admin/admin_dashboard.html',
                            current_user=current_user,
-                           stats=stats, res=res)
+                           stats=stats)
 
 
 @admin.route('/patients', methods=['GET', 'POST'],
@@ -53,7 +51,9 @@ def manage_patients():
                                    current_user=current_user, patient=patient,
                                    form=form)
         else:
-            flash("Patient not found, check id number and try again", 'danger')
+            flash("Patient not found, check id number and try again",
+                  'danger')
+            return redirect(url_for('admin.manage_patients'))
     if form.errors != {}:
         for cat, msg in form.errors.items():
             flash(msg[0], 'danger')
@@ -67,6 +67,7 @@ def manage_patients():
 def add_patient():
     """Add patient route"""
     form = AddPatientForm()
+    session_cookies = request.cookies
     if form.validate_on_submit():
         data = {
         'fullname': form.fullname.data,
@@ -77,15 +78,23 @@ def add_patient():
         'email': form.email.data,
         'cell': form.cell.data
         }
-        url = 'http://0.0.0.0:5000/api/v1/patients'
-        headers = {'Content-Type': 'application/json'}
-        response = requests.post(url, headers=headers, data=json.dumps(data))
+        url = 'http://0.0.0.0:5001/api/v1/patients'
+        headers = {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': request.cookies.get('csrftoken')
+            }
+        response = requests.post(url,
+                                 cookies=session_cookies,
+                                 headers=headers,
+                                 data=json.dumps(data)
+                                 )
         if response.status_code == 201:
             storage.reload()
             flash('Patient added successfully', 'success')
             return redirect(url_for('admin.add_patient'))
         else:
             flash('An error occurred. Please try again', 'danger')
+            return redirect(url_for('admin.add_patient'))
     if form.errors != {}:
         for category, error_msg in form.errors.items():
             flash(str(error_msg[0]), 'danger')
@@ -99,9 +108,9 @@ def view_patient(id):
     """Patient view"""
     id = escape(id)
     form = AddMedicalrecordForm() 
-    
-    url = 'http://0.0.0.0:5000/api/v1/patients/{}'.format(id)
-    with requests.get(url) as response:
+    session_cookies = request.cookies
+    url = 'http://0.0.0.0:5001/api/v1/patients/{}'.format(id)
+    with requests.get(url, cookies=session_cookies) as response:
         # Get Patient 1st
         if response.status_code == 200:
             patient = response.json()
@@ -112,26 +121,30 @@ def view_patient(id):
                     'diagnosis': form.diagnosis.data,
                     'prescription': form.prescription.data
                 }
-                url = 'http://0.0.0.0:5000/api/v1/medical_records'
-                headers = {'Content-Type': 'application/json'}
+                url = 'http://0.0.0.0:5001/api/v1/medical_records'
+                headers = {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': request.cookies.get('csrftoken')
+                    }
                 response = requests.post(url, headers=headers,
+                                         cookies=session_cookies,
                                          data=json.dumps(data))
                 if response.status_code == 201:
                     storage.reload()
-                    url_prefix = 'http://0.0.0.0:5000/api/v1/patients'
+                    url_prefix = 'http://0.0.0.0:5001/api/v1/patients'
                     url_postfix = '/{}/medical_records'.format(id)
                     url = '{}{}'.format(url_prefix, url_postfix)
-                    with requests.get(url) as response:
+                    with requests.get(url, cookies=session_cookies) as response:
                         if response.status_code == 200:
                             medical_records = response.json()
                             return render_template('admin/view_patient.html',
                                            medical_records=medical_records,
                                            current_user=current_user,
                                            form=form, patient=patient)
-            url_prefix = 'http://0.0.0.0:5000/api/v1/patients'
+            url_prefix = 'http://0.0.0.0:5001/api/v1/patients'
             url_postfix = '/{}/medical_records'.format(id)
             url = '{}{}'.format(url_prefix, url_postfix)
-            with requests.get(url) as response:
+            with requests.get(url, cookies=session_cookies) as response:
                 if response.status_code == 200:
                     medical_records = response.json()
                     return render_template('admin/view_patient.html',
@@ -148,6 +161,7 @@ def view_patient(id):
 def edit_patient(patient_id):
     """Edits a patient"""
     form = EditPatientForm()
+    session_cookies = request.cookies
     p_id = escape(patient_id)
     patient = storage.get(Patient, p_id)
     if patient is None:
@@ -175,9 +189,16 @@ def edit_patient(patient_id):
         'email': form.email.data,
         'cell': form.cell.data
         }
-        url = 'http://0.0.0.0:5000/api/v1/patients/{}'.format(p_id)
-        headers = {'Content-Type': 'application/json'}
-        response = requests.put(url, headers=headers, data=json.dumps(data))
+        url = 'http://0.0.0.0:5001/api/v1/patients/{}'.format(p_id)
+        headers = {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': request.cookies.get('csrftoken')
+            }
+        response = requests.put(url,
+                                cookies=session_cookies,
+                                headers=headers,
+                                data=json.dumps(data)
+                                )
         if response.status_code == 200:
             storage.reload()
             flash('Patient updated successfully', 'success')
@@ -197,6 +218,7 @@ def edit_medical_record(rec_id):
     """Edits a medical record"""
     rec_id = escape(rec_id)
     form = EditMedicalrecordForm()
+    session_cookies = request.cookies
     rec = storage.get(MedicalRecord, rec_id)
     if rec is None:
         flash ("Medical record not found", 'danger')
@@ -213,9 +235,16 @@ def edit_medical_record(rec_id):
             'diagnosis': form.diagnosis.data,
             'prescription': form.prescription.data
         }
-        url = 'http://0.0.0.0:5000/api/v1/medical_records/{}'.format(rec_id)
-        headers = {'Content-Type': 'application/json'}
-        response = requests.put(url, headers=headers, data=json.dumps(data))
+        url = 'http://0.0.0.0:5001/api/v1/medical_records/{}'.format(rec_id)
+        headers = {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': request.cookies.get('csrftoken')
+            }
+        response = requests.put(url,
+                                cookies=session_cookies,
+                                headers=headers,
+                                data=json.dumps(data)
+                                )
         if response.status_code == 200:
             storage.reload()
             flash('Record updated successfully', 'success')

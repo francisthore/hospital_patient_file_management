@@ -1,6 +1,7 @@
 #!/usr/python3
 """Module to handle form creation"""
 from flask_wtf import FlaskForm
+from flask_wtf.recaptcha import RecaptchaField
 from wtforms import (TextAreaField, StringField,
                      PasswordField, IntegerField, RadioField,
                      SubmitField, DateField, TextAreaField)
@@ -8,6 +9,7 @@ from wtforms.validators import (DataRequired, Email, EqualTo,
                                 ValidationError, Length)
 from models import storage
 import re
+from flask import current_app as app
 
 
 class RegistrationForm(FlaskForm):
@@ -22,6 +24,7 @@ class RegistrationForm(FlaskForm):
     confirm_password = PasswordField('Confirm Password',
                                      validators=[DataRequired(),
                                                  EqualTo('password')])
+    recaptcha = RecaptchaField()
     submit = SubmitField('Register')
 
     def validate_username(self, username):
@@ -37,7 +40,6 @@ class RegistrationForm(FlaskForm):
     def validate_password(self, password):
         """Checks if password meets complexity requirements"""
         password = password.data
-        # length_req = r'{8, }'
         uppercase_req = r'[A-Z]'
         lowercase_req = r'[a-z]'
         digit_req = r'\d'
@@ -87,6 +89,7 @@ class LoginForm(FlaskForm):
     """Creates a login form fields"""
     username = StringField('Username', validators=[DataRequired()])
     password = PasswordField('Password', validators=[DataRequired()])
+    recaptcha = RecaptchaField()
     submit = SubmitField('Sign In')
 
 

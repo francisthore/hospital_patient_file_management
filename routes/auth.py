@@ -1,10 +1,18 @@
 #!/usr/bin/python3
 """Handles authentication routes"""
-from flask import render_template, flash, redirect, url_for
-from flask_login import login_user, logout_user, current_user, login_required, LoginManager
+from flask import render_template, flash, redirect, url_for, request
+from flask_login import (login_user,
+                         logout_user,
+                         current_user,
+                         login_required,
+                         )
 from models import storage
 from markupsafe import escape
-from main_app.forms import RegistrationForm, LoginForm, StaffRegistrationForm, VerifyEmailForm
+from main_app.forms import (RegistrationForm,
+                            LoginForm,
+                            StaffRegistrationForm,
+                            VerifyEmailForm
+                            )
 from models.user import User
 from models.staff import Staff
 from flask import Blueprint
@@ -14,7 +22,6 @@ import requests
 
 auth = Blueprint('auth', __name__)
 
-login_manager = LoginManager()
 
 @auth.route('/register', methods=['GET', 'POST'], strict_slashes=False)
 def register():
@@ -28,8 +35,11 @@ def register():
             'email': form.email.data,
             'password': form.password.data
         }
-        url = 'http://0.0.0.0:5000/api/v1/users'
-        headers = {'Content-Type': 'application/json'}
+        url = 'http://0.0.0.0:5001/api/v1/users'
+        headers = {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': request.cookies.get('csrftoken')
+            }
         response = requests.post(url, headers=headers, data=json.dumps(data))
         if response.status_code == 201:
             flash('Account created successfully, check your email', 'success')
@@ -69,8 +79,11 @@ def register_staff():
         'cell': form.cell.data,
         'user_id': current_user.id
         }
-        url = 'http://0.0.0.0:5000/api/v1/staff'
-        headers = {'Content-Type': 'application/json'}
+        url = 'http://0.0.0.0:5001/api/v1/staff'
+        headers = {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': request.cookies.get('csrftoken')
+            }
         response = requests.post(url, headers=headers, data=json.dumps(data))
         if response.status_code == 201:
             flash('Staff member registered successfully', 'success')

@@ -61,6 +61,7 @@ def delete_patient(patient_id):
 @staff_one_required
 def create_patient():
     """Creates a patient"""
+    print("creating patient")
     if not request.is_json:
         abort(400)
     data = request.get_json()
