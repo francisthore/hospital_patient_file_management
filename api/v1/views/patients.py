@@ -32,7 +32,7 @@ def get_patient(patient_id):
 
 @app_views.route('/patients/<string:patient_id>/medical_records',
                  methods=['GET'], strict_slashes=False)
-@staff_two_required
+@staff_one_required
 def get_patient_medical_records(patient_id):
     """Retrieves one patient from db and their records"""
     p_id = escape(patient_id)
@@ -45,7 +45,7 @@ def get_patient_medical_records(patient_id):
 
 @app_views.route('/patients/<string:patient_id>', methods=['DELETE'],
                  strict_slashes=False)
-@admin_required
+@staff_one_required
 def delete_patient(patient_id):
     """Deletes a patient from storage"""
     p_id = escape(patient_id)

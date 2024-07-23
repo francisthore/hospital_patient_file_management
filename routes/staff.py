@@ -85,7 +85,10 @@ def view_patient(id):
                     'prescription': form.prescription.data
                 }
                 url = 'http://0.0.0.0:5001/api/v1/medical_records'
-                headers = {'Content-Type': 'application/json'}
+                headers = {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': request.cookies.get('csrftoken')
+                }
                 response = requests.post(url, cookies=session_cookies,
                                           headers=headers,
                                          data=json.dumps(data))
@@ -304,7 +307,8 @@ def edit_medical_record(rec_id):
         if response.status_code == 200:
             storage.reload()
             flash('Record updated successfully', 'success')
-            return redirect(url_for('staff_r.manage_patients'))
+            id = response.json().get('patient_id')
+            return redirect(url_for('staff_r.view_patient', id=id))
         else:
             flash('An error occurred. Please try again', 'danger')
             return redirect(url_for('staff_r.manage_patients'))
