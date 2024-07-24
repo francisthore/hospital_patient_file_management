@@ -25,8 +25,10 @@ admin = Blueprint('admin', __name__, url_prefix='/admin')
 @admin_required
 def admin_dashboard():
     """Renders the admin dashboard"""
+    # Get cookies from session
     session_cookies = request.cookies
     url = 'http://0.0.0.0:5001/api/v1/stats'
+    # Pass cookies in the request to api
     with requests.get(url, cookies=session_cookies) as response:
         if response.status_code == 200:
             stats = response.json()
@@ -43,6 +45,7 @@ def admin_dashboard():
 def manage_patients():
     """Patient Management Route"""
     form = SearchPatientForm()
+    # Handle form after validation
     if form.validate_on_submit():
         id_num = form.id_number.data
         patient = storage.get_by_id_number(Patient, id_num)
@@ -69,6 +72,7 @@ def add_patient():
     form = AddPatientForm()
     session_cookies = request.cookies
     if form.validate_on_submit():
+        # Get data from form
         data = {
         'fullname': form.fullname.data,
         'id_number': form.id_number.data,
@@ -79,6 +83,7 @@ def add_patient():
         'cell': form.cell.data
         }
         url = 'http://0.0.0.0:5001/api/v1/patients'
+        # Define headers for the request
         headers = {
             'Content-Type': 'application/json',
             'X-CSRFToken': request.cookies.get('csrftoken')
@@ -89,6 +94,7 @@ def add_patient():
                                  data=json.dumps(data)
                                  )
         if response.status_code == 201:
+            # Reload storage to get new patient
             storage.reload()
             flash('Patient added successfully', 'success')
             return redirect(url_for('admin.add_patient'))
@@ -96,6 +102,7 @@ def add_patient():
             flash('An error occurred. Please try again', 'danger')
             return redirect(url_for('admin.add_patient'))
     if form.errors != {}:
+        # Print error messages to frontend
         for category, error_msg in form.errors.items():
             flash(str(error_msg[0]), 'danger')
     return render_template('admin/patients_add.html', form=form, current_user=current_user)
@@ -114,7 +121,9 @@ def view_patient(id):
         # Get Patient 1st
         if response.status_code == 200:
             patient = response.json()
+            # Then handle medical record entry
             if form.validate_on_submit():
+                # Get data from form
                 data = {
                     'patient_id': id,
                     'staff_id': storage.get_id_by_user_id('Staff', current_user.id),
@@ -122,6 +131,7 @@ def view_patient(id):
                     'prescription': form.prescription.data
                 }
                 url = 'http://0.0.0.0:5001/api/v1/medical_records'
+                # Define headers for the request
                 headers = {
                     'Content-Type': 'application/json',
                     'X-CSRFToken': request.cookies.get('csrftoken')
@@ -130,6 +140,7 @@ def view_patient(id):
                                          cookies=session_cookies,
                                          data=json.dumps(data))
                 if response.status_code == 201:
+                    # Reload storage to get the new medical record
                     storage.reload()
                     url_prefix = 'http://0.0.0.0:5001/api/v1/patients'
                     url_postfix = '/{}/medical_records'.format(id)
@@ -141,6 +152,7 @@ def view_patient(id):
                                            medical_records=medical_records,
                                            current_user=current_user,
                                            form=form, patient=patient)
+            # Creating two parts of the URL due to length restrictions
             url_prefix = 'http://0.0.0.0:5001/api/v1/patients'
             url_postfix = '/{}/medical_records'.format(id)
             url = '{}{}'.format(url_prefix, url_postfix)
@@ -168,6 +180,7 @@ def edit_patient(patient_id):
         flash('Patient not found', 'danger')
         abort(404)
     if request.method ==  'GET':
+        # Preset form data with patient data
         form.fullname.data = patient.fullname
         form.id_number.data = patient.id_number
         form.dob.data = patient.dob
@@ -180,6 +193,7 @@ def edit_patient(patient_id):
                                form=form, patient=patient)
 
     if form.validate_on_submit():
+        # Get data from form
         data = {
         'fullname': form.fullname.data,
         'id_number': form.id_number.data,
@@ -190,6 +204,7 @@ def edit_patient(patient_id):
         'cell': form.cell.data
         }
         url = 'http://0.0.0.0:5001/api/v1/patients/{}'.format(p_id)
+        # Define headers for the request
         headers = {
             'Content-Type': 'application/json',
             'X-CSRFToken': request.cookies.get('csrftoken')
@@ -200,6 +215,7 @@ def edit_patient(patient_id):
                                 data=json.dumps(data)
                                 )
         if response.status_code == 200:
+            # Reload storage to get the updated patient
             storage.reload()
             flash('Patient updated successfully', 'success')
             return redirect(url_for('admin.view_patient', id=p_id))
@@ -219,11 +235,13 @@ def edit_medical_record(rec_id):
     rec_id = escape(rec_id)
     form = EditMedicalrecordForm()
     session_cookies = request.cookies
+    # Could improve and use an api call instead
     rec = storage.get(MedicalRecord, rec_id)
     if rec is None:
         flash ("Medical record not found", 'danger')
         abort(404)
     if request.method == 'GET':
+        # Preset form data with medical record data
         form.diagnosis.data = rec.diagnosis
         form.prescription.data = rec.prescription
 
@@ -231,11 +249,13 @@ def edit_medical_record(rec_id):
                                form=form, rec=rec)
     
     if form.validate_on_submit():
+        # Get data from form
         data = {
             'diagnosis': form.diagnosis.data,
             'prescription': form.prescription.data
         }
         url = 'http://0.0.0.0:5001/api/v1/medical_records/{}'.format(rec_id)
+        # Define headers for the request
         headers = {
             'Content-Type': 'application/json',
             'X-CSRFToken': request.cookies.get('csrftoken')
