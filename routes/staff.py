@@ -31,12 +31,12 @@ staff_r = Blueprint('staff_r', __name__, url_prefix='/staff')
 def staff_dashboard():
     """Renders the staff dashboard"""
     url = 'http://0.0.0.0:5001/api/v1/stats'
-    session_cookies = request.cookies
+    session_cookies = request.cookies # Get session cookies from request
     with requests.get(url, cookies=session_cookies) as response:
         if response.status_code == 200:
             stats = response.json()
         else:
-            stats = {}
+            stats = {} # No stats found
     return render_template('staff/dashboard.html', stats=stats)
 
 
@@ -47,6 +47,7 @@ def manage_patients():
     """Patient Management Route"""
     form = SearchPatientForm()
     if form.validate_on_submit():
+        # Handle form after validation
         id_num = form.id_number.data
         patient = storage.get_by_id_number(Patient, id_num)
         if patient:
@@ -57,6 +58,7 @@ def manage_patients():
             flash("Patient not found, check id number and try again",
                   'danger')
     if form.errors != {}:
+        # Flash form errors to frontend
         for cat, msg in form.errors.items():
             flash(msg[0], 'danger')
     return render_template('staff/manage_patients.html',
@@ -77,6 +79,7 @@ def view_patient(id):
         if response.status_code == 200:
             patient = response.json()
             if form.validate_on_submit():
+                # Get data from form
                 data = {
                     'patient_id': id,
                     'staff_id': storage.get_id_by_user_id('Staff',
@@ -85,6 +88,7 @@ def view_patient(id):
                     'prescription': form.prescription.data
                 }
                 url = 'http://0.0.0.0:5001/api/v1/medical_records'
+                # Define headers for the request
                 headers = {
                     'Content-Type': 'application/json',
                     'X-CSRFToken': request.cookies.get('csrftoken')
@@ -127,6 +131,7 @@ def add_patient():
     form = AddPatientForm()
     session_cookies = request.cookies
     if form.validate_on_submit():
+        # Get data from form
         data = {
         'fullname': form.fullname.data,
         'id_number': form.id_number.data,
@@ -193,6 +198,7 @@ def edit_patient(patient_id):
         'cell': form.cell.data
         }
         url = 'http://0.0.0.0:5001/api/v1/patients/{}'.format(p_id)
+        # Define headers for the request
         headers = {
             'Content-Type': 'application/json',
             'X-CSRFToken': request.cookies.get('csrftoken')
@@ -229,6 +235,7 @@ def edit_staff(staff_id):
         flash('Staff member not found', 'danger')
         abort(404)
     if request.method == 'GET':
+        # Preset form data with staff member data
         form.fullname.data = staff.fullname
         form.id_number.data = staff.id_number
         form.dob.data = staff.dob
@@ -241,6 +248,7 @@ def edit_staff(staff_id):
                                form=form, staff=staff)
     
     if form.validate_on_submit():
+        # Handle form after validation
         data = {
         'fullname': form.fullname.data,
         'id_number': form.id_number.data,
@@ -251,6 +259,7 @@ def edit_staff(staff_id):
         'cell': form.cell.data
         }
         url = 'http://0.0.0.0:5001/api/v1/staff/{}'.format(staff.id)
+        # Define headers for the request
         headers = {
             'Content-Type': 'application/json',
             'X-CSRFToken': request.cookies.get('csrftoken')
@@ -296,6 +305,7 @@ def edit_medical_record(rec_id):
             'prescription': form.prescription.data
         }
         url = 'http://0.0.0.0:5001/api/v1/medical_records/{}'.format(rec_id)
+        # Define headers for the request
         headers = {
             'Content-Type': 'application/json',
             'X-CSRFToken': request.cookies.get('csrftoken')

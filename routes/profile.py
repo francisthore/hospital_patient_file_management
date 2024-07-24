@@ -17,6 +17,7 @@ def profile():
     id = current_user.id
     session_cookies = request.cookies
     url = 'http://localhost:5001/api/v1/staff/{}'.format(id)
+    # Get logged in user data
     with requests.get(url, cookies=session_cookies) as response:
         staff = response.json()
         if response.status_code == 404:
