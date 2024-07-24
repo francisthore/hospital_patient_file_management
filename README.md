@@ -2,6 +2,8 @@
 
 [![MIT License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
+![Screenshot of project dashboard](https://francisthore.github.io/static/img/project%20hero.png)
+
 ## Description
 The Hospital Patient File Management System is designed to help medical institutions efficiently manage patient files. It aims to reduce patient waiting times by enabling quick retrieval of patient records with just a few clicks, rather than through physical searches. This project is especially beneficial for South Africa's struggling medical institutions.
 
@@ -106,6 +108,11 @@ I welcome contributors to help improve this project.
     git push origin your_feature
     ```
 5. Open a Pull Request
+
+
+## Related projects
+1. [Hospital Management System by Kisharn](https://github.com/kishan0725/Hospital-Management-System)
+2. [Hospital Management System by Opensource-emr](https://github.com/opensource-emr/hospital-management-emr)
 
 ## License
 
