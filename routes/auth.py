@@ -26,16 +26,20 @@ auth = Blueprint('auth', __name__)
 @auth.route('/register', methods=['GET', 'POST'], strict_slashes=False)
 def register():
     """Registers a user"""
+
+    # check if user is already logged in and redirect to profile
     if current_user.is_authenticated:
         return redirect(url_for('user_profile.profile'))
     form = RegistrationForm()
     if form.validate_on_submit():
+        # Get data from form
         data = {
             'username': form.username.data,
             'email': form.email.data,
             'password': form.password.data
         }
         url = 'http://0.0.0.0:5001/api/v1/users'
+        # Define headers for the request
         headers = {
             'Content-Type': 'application/json',
             'X-CSRFToken': request.cookies.get('csrftoken')
@@ -47,6 +51,7 @@ def register():
             user_id = response.json()['id']
             user = storage.get(User, user_id)
             subject = "Verify Your Email Address"
+            # Send verification email to user
             send_verification_email(user.email, subject, user.username,
                                 user.verification_token)
             if user:
@@ -58,6 +63,7 @@ def register():
         else:
             flash('An error occurred. Please try again', 'danger')
     if form.errors != {}:
+        # Display error messages to frontend
         for category, error_msg in form.errors.items():
             flash(str(error_msg[0]), 'danger')
     return render_template('register.html', title='Register', form=form)
@@ -69,6 +75,7 @@ def register_staff():
     """Registers a staff member and associates with user"""
     form = StaffRegistrationForm()
     if form.validate_on_submit():
+        # Get data from form
         data = {
         'fullname': form.fullname.data,
         'id_number': form.id_number.data,
@@ -80,6 +87,7 @@ def register_staff():
         'user_id': current_user.id
         }
         url = 'http://0.0.0.0:5001/api/v1/staff'
+        # Define headers for the request
         headers = {
             'Content-Type': 'application/json',
             'X-CSRFToken': request.cookies.get('csrftoken')
@@ -98,21 +106,20 @@ def register_staff():
 @auth.route('/verify', methods=['GET', 'POST'], strict_slashes=False)
 @login_required
 def verify_email():
+    """Verifies a user's email"""
     form = VerifyEmailForm()   
-
-    
     if form.validate_on_submit():
         token = form.v_token.data
         user = storage.get_user_by_verification_token(token)
-        if not user:
+        if not user: # Check if user exists
             flash('Invalid or expired verification token. Please request a new one.', 'error')
             return redirect(url_for('auth.login'))
-        user.verified = True
+        user.verified = True # Change user email status to verified
         user.verification_token = None
         storage.save()
         flash('Email verification successful!', 'success')
         return redirect(url_for('auth.register_staff'))
-    
+
     return render_template('verify_email.html', form=form)
 
 
@@ -120,7 +127,7 @@ def verify_email():
 @auth.route('/login', methods=['GET', 'POST'], strict_slashes=False)
 def login():
     """Authenticates a user and signs them into the system"""
-    if current_user.is_authenticated:
+    if current_user.is_authenticated: # check if user is already logged in
         return redirect(url_for('user_profile.profile'))
     form = LoginForm()
     if form.validate_on_submit():
@@ -129,11 +136,13 @@ def login():
             flash('Invalid username or password', 'danger')
             return redirect(url_for('auth.login'))
         login_user(user)
+        flash('Successfully logged in', 'success')
         if current_user.role == 'admin':
             return redirect(url_for('admin.admin_dashboard'))
         elif current_user.role == 'staff_one' or current_user.role == 'staff_two':
             return redirect(url_for('staff_r.staff_dashboard'))
         else:
+            # Default to user profile without role
             return redirect(url_for('user_profile.profile'))
     
     return render_template('login.html', form=form)
@@ -145,4 +154,5 @@ def logout():
     """Logs a user out"""
     logout_user()
     flash('Successfully logged out', 'success')
+    # Redirect to home page
     return redirect(url_for('auth.login'))
