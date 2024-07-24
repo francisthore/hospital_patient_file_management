@@ -13,8 +13,11 @@ def admin_required(func):
     is admin"""
     @wraps(func)
     def decorated_view(*args, **kwargs):
+        """
+        Decorator to check if the current user is an authenticated admin.
+        """
         if not current_user.is_authenticated or current_user.role != 'admin':
-            abort(403)
+            abort(403) 
         return func(*args, **kwargs)
     return decorated_view
 
@@ -24,6 +27,9 @@ def staff_one_required(func):
     is staff_one and above"""
     @wraps(func)
     def decorated_view(*args, **kwargs):
+        """
+        Checks if the current user is an authenticated staff.
+        """
         yes = ['staff_one', 'staff_two', 'admin']
         if not current_user.is_authenticated or current_user.role not in yes:
             abort(403)
@@ -36,6 +42,9 @@ def staff_two_required(func):
     is staff_two and above"""
     @wraps(func)
     def decorated_view(*args, **kwargs):
+        """
+        Checks if the current user is an authenticated staff.
+        """
         yes = ['staff_two', 'admin']
         if not current_user.is_authenticated or current_user.role not in yes:
             abort(403)

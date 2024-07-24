@@ -1,11 +1,13 @@
 #!/usr/bin/python3
 """Handles email sending"""
 import requests
-from flask import current_app, render_template
+from flask import current_app, render_template, flash
 
 def send_verification_email(to_address, subject, username,
                             verification_token):
+    """Sends a verification email"""
     try:
+        # Set the Mailgun API key and domain
         api_key = current_app.config.get('MAILGUN_API_KEY')
         domain = current_app.config.get('MAILGUN_DOMAIN')
         from_email = f"MTS Info <info@{domain}>"
@@ -26,10 +28,10 @@ def send_verification_email(to_address, subject, username,
         )
 
         if response.status_code == 200:
-            print(f"Verification email sent to {to_address} successfully.")
+            flash(f"Verification email sent to {to_address} successfully.", 'success')
         else:
-            print(f"Failed to send verification email to {to_address}. Status code: {response.status_code}, Response: {response.text}")
+            flash(f"Failed to send verification email to {to_address}. Status code: {response.status_code}, Response: {response.text}", 'danger')
 
     except Exception as e:
-        print(f"An error occurred while sending verification email to {to_address}: {str(e)}")
+        flash(f"An error occurred while sending verification email to {to_address}", 'danger')
 
