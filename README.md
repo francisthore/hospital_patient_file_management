@@ -7,6 +7,8 @@ The Hospital Patient File Management System is designed to help medical institut
 
 The system features role-based access control to ensure data security. For instance, a receptionist can only check if a patient exists and register them if they don't.
 
+You can see the project demo here [https://app.thore.tech](https://app.thore.tech) and read a more in depth blog post on [LinkedIn](https://www.linkedin.com/pulse/clinic-queues-most-african-countries-finally-coming-end-francis-thore-lp6df/?trackingId=I4f5unmwQXue6HnPpzGK1A%3D%3D)
+
 The project is built using the **Python Flask Framework**.
 
 ## Installation
