@@ -21,6 +21,7 @@ def close_storage(e):
 
 @api.after_request
 def add_header(response):
+    """Adds headers to response"""
     response.cache_control.no_store = True
     return response
 

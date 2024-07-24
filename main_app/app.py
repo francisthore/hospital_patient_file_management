@@ -15,7 +15,7 @@ from api.v1.api import api
 from dotenv import load_dotenv
 
 
-load_dotenv()
+load_dotenv() # load environment variables
 MAILGUN_API_KEY = os.getenv('MAILGUN_API_KEY')
 MAILGUN_DOMAIN = os.getenv('MAILGUN_DOMAIN')
 APP_KEY = os.getenv('MAIN_APP_KEY')
@@ -30,8 +30,8 @@ app.config['MAILGUN_DOMAIN'] = MAILGUN_DOMAIN
 app.config['SESSION_TYPE'] = 'filesystem'
 app.config['RECAPTCHA_PUBLIC_KEY'] = RECAPTCHA_PUBLIC_KEY
 app.config['RECAPTCHA_PRIVATE_KEY'] = RECAPTCHA_PRIVATE_KEY
-CORS(app)
-CSRFProtect(app)
+CORS(app) # allow cross-origin requests from any origin
+CSRFProtect(app) # csrf protection for all routes
 app.register_blueprint(auth)
 app.register_blueprint(user_profile)
 app.register_blueprint(admin)
@@ -43,6 +43,7 @@ login_manager.login_view = 'auth.login'
 
 @login_manager.user_loader
 def load_user(user_id):
+    """Loads a user"""
     return storage.get('User', user_id)
 
 
@@ -54,6 +55,7 @@ def handle_unauthorised(err):
 
 @app.after_request
 def add_csrf_cookie(response: Response):
+    """Adds csrf token to cookies"""
     if response.status_code in range(200, 400) and not response.direct_passthrough:
         response.set_cookie("csrftoken", generate_csrf(), secure=True)
     return response
